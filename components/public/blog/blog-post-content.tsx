@@ -3,10 +3,31 @@
 import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { ArrowLeft, Calendar, Clock, Bookmark, Twitter, Linkedin, Link2, ChevronUp } from "lucide-react"
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Bookmark,
+  Twitter,
+  Linkedin,
+  Link2,
+  ChevronUp,
+} from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { BlogPost, getRelatedPosts } from "@/lib/blog-data"
+import Prism from "prismjs"
+
+// Import Prism languages
+import "prismjs/components/prism-dart"
+import "prismjs/components/prism-kotlin"
+import "prismjs/components/prism-bash"
+import "prismjs/components/prism-typescript"
+import "prismjs/components/prism-javascript"
+import "prismjs/components/prism-yaml"
+import "prismjs/components/prism-markdown"
+import "prismjs/components/prism-json"
+import "prismjs/components/prism-sql"
 
 interface BlogPostContentProps {
   post: BlogPost
@@ -15,25 +36,127 @@ interface BlogPostContentProps {
 export function BlogPostContent({ post }: BlogPostContentProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [copiedLink, setCopiedLink] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const relatedPosts = getRelatedPosts(post.slug)
 
   useEffect(() => {
     setIsVisible(true)
+    setHasMounted(true)
 
+    // Check if bookmarked
+    const bookmarks = JSON.parse(localStorage.getItem("blog_bookmarks") || "[]")
+    setIsBookmarked(bookmarks.includes(post.id))
+
+    // Mobile scroll animation logic
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 500)
     }
-
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [post.id])
+
+  // Trigger highlighting with MutationObserver for maximum stability
+  useEffect(() => {
+    if (!hasMounted || !contentRef.current) return
+
+    const highlightCode = () => {
+      if (typeof window !== "undefined" && Prism) {
+        // Only highlight blocks that haven't been highlighted yet
+        const codeBlocks = contentRef.current?.querySelectorAll("pre code:not([data-highlighted])")
+        codeBlocks?.forEach((block) => {
+          block.setAttribute("data-highlighted", "true")
+          Prism.highlightElement(block as HTMLElement)
+        })
+      }
+    }
+
+    // Initial highlight
+    highlightCode()
+
+    // Watch for content changes (e.g. if dangerouslySetInnerHTML updates)
+    const observer = new MutationObserver((mutations) => {
+      // Only re-highlight if the core structure changes, not if we just added tokens
+      const hasStructuralChange = mutations.some(m => 
+        m.type === "childList" && 
+        Array.from(m.addedNodes).some(n => 
+          n.nodeType === 1 && ((n as Element).tagName === "PRE" || (n as Element).tagName === "CODE")
+        )
+      )
+      
+      if (hasStructuralChange) {
+        highlightCode()
+      }
+    })
+
+    observer.observe(contentRef.current, { childList: true, subtree: true })
+
+    return () => observer.disconnect()
+  }, [hasMounted, post.content])
+
+  // Attach copy button handlers after content is hydrated
+  useEffect(() => {
+    if (!hasMounted) return
+
+    const setupCopyHandlers = () => {
+      const copyButtons = document.querySelectorAll(".code-copy-btn")
+      const handlers: { btn: Element; handler: () => void }[] = []
+
+      copyButtons.forEach((btn) => {
+        const handler = () => {
+          const pre = btn.closest(".code-window")?.querySelector("pre")
+          if (pre) {
+            const code = pre.innerText
+            navigator.clipboard.writeText(code).then(() => {
+              const label = btn.querySelector(".copy-label") as HTMLElement
+              const iconContainer = btn.querySelector(".copy-icon-container") as HTMLElement
+              if (label && iconContainer) {
+                const originalLabel = label.innerText
+                const originalIcon = iconContainer.innerHTML
+                label.innerText = "Copied!"
+                iconContainer.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check text-emerald-400"><path d="M20 6 9 17l-5-5"/></svg>'
+                btn.classList.add("bg-emerald-500/10", "border-emerald-500/30", "text-emerald-400")
+                
+                setTimeout(() => {
+                  label.innerText = originalLabel
+                  iconContainer.innerHTML = originalIcon
+                  btn.classList.remove("bg-emerald-500/10", "border-emerald-500/30", "text-emerald-400")
+                }, 2000)
+              }
+            })
+          }
+        }
+        btn.addEventListener("click", handler)
+        handlers.push({ btn, handler })
+      })
+      return handlers
+    }
+
+    const handlers = setupCopyHandlers()
+    
+    return () => {
+      handlers.forEach(({ btn, handler }) => btn.removeEventListener("click", handler))
+    }
+  }, [hasMounted, post.content])
+
+  const toggleBookmark = () => {
+    const bookmarks = JSON.parse(localStorage.getItem("blog_bookmarks") || "[]")
+    let newBookmarks
+    if (bookmarks.includes(post.id)) {
+      newBookmarks = bookmarks.filter((id: number) => id !== post.id)
+    } else {
+      newBookmarks = [...bookmarks, post.id]
+    }
+    localStorage.setItem("blog_bookmarks", JSON.stringify(newBookmarks))
+    setIsBookmarked(!isBookmarked)
+  }
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setCopiedLink(true)
+    setTimeout(() => setCopiedLink(false), 2000)
   }
 
   const scrollToTop = () => {
@@ -105,7 +228,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
           >
             <div className="flex items-center gap-4">
               <Avatar className="h-12 w-12 border-2 border-border">
-                <AvatarImage src={post.author.avatar || "/placeholder.svg"} alt={post.author.name} />
+                <AvatarImage src={post.author.avatar || "/developer-portrait.png"} alt={post.author.name} />
                 <AvatarFallback className="bg-secondary font-mono">
                   {post.author.name
                     .split(" ")
@@ -156,22 +279,20 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
             <article
               ref={contentRef}
               className={cn(
-                "prose prose-invert prose-lg max-w-none opacity-0",
+                "prose prose-invert prose-lg max-w-none opacity-0 group/content",
                 "prose-headings:font-semibold prose-headings:tracking-tight",
                 "prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4 prose-h2:text-gradient",
                 "prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3",
-                "prose-p:text-muted-foreground prose-p:leading-relaxed",
+                "prose-p:text-muted-foreground prose-p:leading-relaxed text-balance",
                 "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
                 "prose-strong:text-foreground prose-strong:font-semibold",
-                "prose-code:text-primary prose-code:bg-secondary/60 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm prose-code:before:content-none prose-code:after:content-none",
-                "prose-pre:bg-card/80 prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl prose-pre:p-4 prose-pre:overflow-x-auto",
                 "prose-ul:text-muted-foreground prose-ol:text-muted-foreground",
                 "prose-li:marker:text-primary",
                 "prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-blockquote:italic",
                 isVisible && "animate-fade-in-up",
               )}
               style={{ animationDelay: "350ms" }}
-              dangerouslySetInnerHTML={{ __html: parseMarkdown(post.content) }}
+              dangerouslySetInnerHTML={{ __html: hasMounted ? parseMarkdown(post.content) : "" }}
             />
 
             {/* Sticky Share Sidebar */}
@@ -214,7 +335,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
                   size="icon"
                   className={cn(
                     "h-10 w-10 rounded-lg border-border/50 hover:border-primary/50 hover:bg-primary/10",
-                    copied && "border-primary/50 bg-primary/10",
+                    copiedLink && "border-primary/50 bg-primary/10",
                   )}
                   onClick={handleCopyLink}
                 >
@@ -224,9 +345,13 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 rounded-lg border-border/50 hover:border-primary/50 hover:bg-primary/10 bg-transparent"
+                  className={cn(
+                    "h-10 w-10 rounded-lg border-border/50 hover:border-primary/50 hover:bg-primary/10 bg-transparent",
+                    isBookmarked && "border-primary/50 bg-primary/10 text-primary",
+                  )}
+                  onClick={toggleBookmark}
                 >
-                  <Bookmark className="h-4 w-4" />
+                  <Bookmark className={cn("h-4 w-4", isBookmarked && "fill-current")} />
                   <span className="sr-only">Bookmark</span>
                 </Button>
               </div>
@@ -271,13 +396,21 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
             <Button
               variant="outline"
               size="icon"
-              className={cn("h-9 w-9 rounded-lg border-border/50", copied && "border-primary/50 bg-primary/10")}
+              className={cn("h-9 w-9 rounded-lg border-border/50", copiedLink && "border-primary/50 bg-primary/10")}
               onClick={handleCopyLink}
             >
               <Link2 className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-border/50 bg-transparent">
-              <Bookmark className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="icon"
+              className={cn(
+                "h-9 w-9 rounded-lg border-border/50 bg-transparent",
+                isBookmarked && "border-primary/50 bg-primary/10 text-primary",
+              )}
+              onClick={toggleBookmark}
+            >
+              <Bookmark className={cn("h-4 w-4", isBookmarked && "fill-current")} />
             </Button>
           </div>
         </div>
@@ -362,8 +495,31 @@ function parseMarkdown(content: string): string {
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       // Italic
       .replace(/\*(.*?)\*/g, "<em>$1</em>")
-      // Code blocks
-      .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
+      // Code blocks with window structure
+      .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+        const language = lang || "code"
+        return `
+        <div class="code-window group">
+          <div class="code-window-header">
+            <div class="code-window-dots">
+              <div class="code-window-dot code-window-dot-red"></div>
+              <div class="code-window-dot code-window-dot-yellow"></div>
+              <div class="code-window-dot code-window-dot-green"></div>
+            </div>
+            <div class="code-window-lang">${language}</div>
+          </div>
+          <button class="code-copy-btn" title="Copy code">
+            <div class="flex items-center gap-1.5 px-0.5">
+              <span class="copy-icon-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </span>
+              <span class="copy-label text-[10px] font-mono font-bold uppercase tracking-tight hidden sm:block">Copy</span>
+            </div>
+          </button>
+          <pre class="language-${language}"><code class="language-${language}">${code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
+        </div>
+        `
+      })
       // Inline code
       .replace(/`([^`]+)`/g, "<code>$1</code>")
       // Unordered lists
@@ -379,8 +535,8 @@ function parseMarkdown(content: string): string {
       .replace(/<p><\/p>/g, "")
       .replace(/<p>(<h[1-3]>)/g, "$1")
       .replace(/(<\/h[1-3]>)<\/p>/g, "$1")
-      .replace(/<p>(<pre>)/g, "$1")
-      .replace(/(<\/pre>)<\/p>/g, "$1")
+      .replace(/<p>(<div class="code-window)/g, "$1")
+      .replace(/(<\/div>)<\/p>/g, "$1")
       .replace(/<p>(<ul>)/g, "$1")
       .replace(/(<\/ul>)<\/p>/g, "$1")
   )

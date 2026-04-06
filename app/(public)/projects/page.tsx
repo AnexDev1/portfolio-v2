@@ -1,31 +1,31 @@
 import { ProjectsPageContent } from "@/components/public/projects/projects-page-content";
 import type { Metadata } from "next";
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://eindev.ir';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://anexon.tech';
 
 export const metadata: Metadata = {
-  title: "Projects",
-  description: "Explore open source projects, experiments, and tools. From web applications to systems programming, dive into the code.",
-  keywords: ["open source", "projects", "web development", "systems programming", "experiments"],
+  title: "Projects — ANEXON",
+  description: "Explore all projects by Anwar Nasir. Mobile apps built with Flutter, web platforms with Next.js, developer SDKs, and AI-powered tools.",
+  keywords: ["projects", "Flutter apps", "mobile development", "web development", "open source", "Anwar Nasir"],
   openGraph: {
-    title: "Projects — EINCODE",
-    description: "Explore open source projects, experiments, and tools.",
+    title: "Projects — ANEXON",
+    description: "Explore all projects by Anwar Nasir. Mobile apps, web platforms, SDKs, and AI tools.",
     url: `${baseUrl}/projects`,
     type: "website",
     images: [
       {
-        url: `${baseUrl}/og-image-projects.png`,
+        url: `${baseUrl}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: "EINCODE Projects",
+        alt: "ANEXON Projects",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Projects — EINCODE",
-    description: "Explore open source projects, experiments, and tools.",
-    images: [`${baseUrl}/og-image-projects.png`],
+    title: "Projects — ANEXON",
+    description: "Explore all projects by Anwar Nasir. Mobile apps, web platforms, SDKs, and AI tools.",
+    images: [`${baseUrl}/og-image.png`],
   },
   alternates: {
     canonical: `${baseUrl}/projects`,

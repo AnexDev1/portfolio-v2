@@ -9,14 +9,12 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 const categories = [
-  { name: "All Posts", count: 12, slug: "all" },
-  { name: "AI & Machine Learning", count: 4, slug: "ai" },
-  { name: "Frontend", count: 3, slug: "frontend" },
-  { name: "Systems & DevOps", count: 3, slug: "systems" },
-  { name: "Design", count: 2, slug: "design" },
+  { name: "All Posts", count: 6, slug: "all" },
+  { name: "Flutter", count: 5, slug: "flutter" },
+  { name: "AI & Integration", count: 1, slug: "ai" },
 ]
 
-const popularTags = ["nextjs", "react", "typescript", "llm", "rust", "linux", "python", "tailwind", "wasm", "rag"]
+const popularTags = ["flutter", "dart", "riverpod", "gemini", "ai", "supabase", "material-3", "kotlin", "widgets", "sdk", "pub.dev", "architecture"]
 
 export function BlogSidebar() {
   const [isVisible, setIsVisible] = useState(false)
@@ -116,7 +114,7 @@ export function BlogSidebar() {
           <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Newsletter</h3>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
-          Get notified about new articles and experiments. No spam, unsubscribe anytime.
+          Get notified about new Flutter & AI articles. No spam, unsubscribe anytime.
         </p>
         <form onSubmit={handleSubscribe} className="space-y-3">
           <Input

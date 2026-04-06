@@ -3,30 +3,30 @@ import { BlogList } from "@/components/public/blog/blog-list";
 import { BlogSidebar } from "@/components/public/blog/blog-sidebar";
 import type { Metadata } from "next";
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://eindev.ir';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://anexon.tech';
 
 export const metadata: Metadata = {
   title: "Blog",
-  description: "Technical articles, experiments, and insights from the digital laboratory. Exploring systems programming, web development, AI, and more.",
+  description: "Articles on Flutter development, AI integration, mobile architecture, and lessons from shipping real-world apps by Anwar Nasir.",
   openGraph: {
-    title: "Blog — EINCODE",
-    description: "Technical articles, experiments, and insights from the digital laboratory.",
+    title: "Blog — ANEXON",
+    description: "Articles on Flutter development, AI integration, and mobile architecture by Anwar Nasir.",
     url: `${baseUrl}/blog`,
     type: "website",
     images: [
       {
-        url: `${baseUrl}/og-image-blog.png`,
+        url: `${baseUrl}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: "EINCODE Blog",
+        alt: "ANEXON Blog",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Blog — EINCODE",
-    description: "Technical articles, experiments, and insights from the digital laboratory.",
-    images: [`${baseUrl}/og-image-blog.png`],
+    title: "Blog — ANEXON",
+    description: "Articles on Flutter development, AI integration, and mobile architecture by Anwar Nasir.",
+    images: [`${baseUrl}/og-image.png`],
   },
   alternates: {
     canonical: `${baseUrl}/blog`,

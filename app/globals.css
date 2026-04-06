@@ -506,3 +506,199 @@
   background: oklch(from var(--primary) l c h / 0.3);
   color: var(--foreground);
 }
+
+/* --- Premium Code Editor Syntax Highlighting (VS Code Dark+ Style) --- */
+
+.code-window {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.85rem;
+  border: 1px solid #333333;
+  background: #1e1e1e; /* Classic VS Code Dark Background */
+  margin: 2.5rem 0;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.code-window:hover {
+  border-color: #444444;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.code-window-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #2d2d2d;
+  background: #252526; /* VS Code Header Color */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.code-window-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.code-window-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  opacity: 0.85;
+}
+
+.code-window-dot-red { background-color: #ff5f56; }
+.code-window-dot-yellow { background-color: #ffbd2e; }
+.code-window-dot-green { background-color: #27c93f; }
+
+.code-window-lang {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #858585;
+  font-weight: 800;
+  background: #2d2d2d;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+}
+
+.code-copy-btn {
+  position: absolute;
+  top: 3.5rem;
+  right: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #333333;
+  background: #2d2d2d;
+  color: #cccccc;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  z-index: 10;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.code-window:hover .code-copy-btn {
+  opacity: 1;
+}
+
+.code-copy-btn:hover {
+  background: #3e3e3e;
+  color: #ffffff;
+}
+
+/* VS Code Dark+ Token Colors */
+code[class*="language-"],
+pre[class*="language-"] {
+  font-family: var(--font-mono);
+  line-height: 1.7;
+  font-size: 0.875rem;
+  color: #d4d4d4; /* Base VS Code Text */
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  tab-size: 4;
+}
+
+pre[class*="language-"] {
+  padding: 1.5rem;
+  overflow: auto;
+  margin: 0;
+  background: transparent !important;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #6a9955; /* VS Code Green Comments */
+  font-style: italic;
+}
+
+.token.punctuation {
+  color: #d4d4d4; 
+}
+
+.token.keyword,
+.token.atrule,
+.token.selector {
+  color: #569cd6; /* VS Code Blue Keywords */
+}
+
+.token.function {
+  color: #dcdcaa; /* VS Code Yellow Functions */
+}
+
+.token.attr-name {
+  color: #9cdcfe; /* VS Code Light Blue Attributes */
+}
+
+.token.string,
+.token.char,
+.token.attr-value {
+  color: #ce9178; /* VS Code Orange/Brown Strings */
+}
+
+.token.class-name,
+.token.regex {
+  color: #4ec9b0; /* VS Code Teal Classes */
+}
+
+.token.boolean,
+.token.constant,
+.token.number {
+  color: #b5cea8; /* VS Code Light Green Constants */
+}
+
+.token.operator,
+.token.builtin,
+.token.entity,
+.token.url {
+  color: #d4d4d4; 
+}
+
+.token.variable,
+.token.property {
+  color: #9cdcfe; /* VS Code Light Blue Variables */
+}
+
+.token.inserted {
+  color: #b5cea8;
+}
+
+.token.deleted {
+  color: #ce9178;
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+.token.namespace {
+  opacity: 0.7;
+}
+
+/* Scrollbar styling */
+pre[class*="language-"]::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+pre[class*="language-"]::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 0;
+}
+pre[class*="language-"]::-webkit-scrollbar-thumb:hover {
+  background: #444444;
+}
+pre[class*="language-"]::-webkit-scrollbar-track {
+  background: transparent;
+}

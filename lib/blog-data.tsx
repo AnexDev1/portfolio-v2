@@ -17,527 +17,749 @@ export interface BlogPost {
   color: string
 }
 
+const author = {
+  name: "Anwar Nasir",
+  avatar: "/developer-portrait.png",
+  role: "Senior Mobile Engineer",
+}
+
 export const blogPosts: BlogPost[] = [
   {
     id: 1,
-    slug: "building-linux-distro-from-scratch",
-    title: "Building a Linux Distro from Scratch",
+    slug: "flutter-riverpod-clean-architecture",
+    title: "Flutter + Riverpod: Clean Architecture That Scales",
     excerpt:
-      "A comprehensive guide to compiling the kernel, configuring BusyBox, and creating bootable ISOs with Syslinux. Learn the fundamentals of Linux system architecture.",
+      "A practical guide to structuring Flutter apps with Riverpod for state management. Learn how to build maintainable, testable, and scalable mobile applications.",
     content: `
 ## Introduction
 
-Building a Linux distribution from scratch is one of the most rewarding learning experiences for any systems programmer. It forces you to understand how all the pieces fit together—from the bootloader to user space.
+After shipping 9+ Flutter apps, I've settled on an architecture pattern that consistently delivers clean, maintainable code. Let me walk you through how I structure my Flutter projects using Riverpod.
 
-## Prerequisites
+## Why Riverpod Over Other Solutions?
 
-Before we begin, ensure you have:
-- A Linux host system (Ubuntu 22.04+ recommended)
-- At least 20GB of free disk space
-- Basic knowledge of shell scripting
-- Patience (this will take time)
+I've tried them all — Provider, BLoC, GetX, MobX. Here's why Riverpod wins for me:
 
-## Step 1: Setting Up the Build Environment
+- **Compile-safe**: No runtime errors from missing providers
+- **Testable**: Every provider can be overridden in tests
+- **No BuildContext dependency**: Access state anywhere
+- **Auto-dispose**: Memory management out of the box
 
-First, we need to create a clean build environment. We'll use a chroot to isolate our build:
+## Project Structure
 
-\`\`\`bash
-export LFS=/mnt/lfs
-mkdir -pv $LFS
-mount /dev/sdb1 $LFS
+Here's the structure I use in production apps like **Noor** and **NativeChat**:
+
+\`\`\`
+lib/
+├── core/
+│   ├── constants/
+│   ├── extensions/
+│   ├── theme/
+│   └── utils/
+├── features/
+│   ├── auth/
+│   │   ├── data/
+│   │   │   ├── models/
+│   │   │   ├── repositories/
+│   │   │   └── sources/
+│   │   ├── domain/
+│   │   │   └── entities/
+│   │   └── presentation/
+│   │       ├── providers/
+│   │       ├── screens/
+│   │       └── widgets/
+│   └── home/
+│       └── ...
+├── shared/
+│   ├── providers/
+│   └── widgets/
+└── main.dart
 \`\`\`
 
-## Step 2: Compiling the Kernel
+## Defining Providers
 
-The Linux kernel is the heart of our distribution. We'll compile version 6.1 LTS:
+The key is keeping providers focused and composable:
 
-\`\`\`bash
-cd /usr/src
-wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.tar.xz
-tar xf linux-6.1.tar.xz
-cd linux-6.1
-make menuconfig
-make -j$(nproc)
-make modules_install
-make install
-\`\`\`
+\`\`\`dart
+// A simple async provider for fetching prayer times
+@riverpod
+Future<List<PrayerTime>> prayerTimes(PrayerTimesRef ref) async {
+  final location = await ref.watch(locationProvider.future);
+  final repository = ref.read(prayerRepositoryProvider);
+  return repository.getPrayerTimes(location);
+}
 
-## Step 3: Configuring BusyBox
+// A notifier for managing user preferences
+@riverpod
+class UserPreferences extends _$UserPreferences {
+  @override
+  UserSettings build() => UserSettings.defaults();
 
-BusyBox provides essential Unix utilities in a single executable:
-
-\`\`\`bash
-wget https://busybox.net/downloads/busybox-1.36.0.tar.bz2
-tar xf busybox-1.36.0.tar.bz2
-cd busybox-1.36.0
-make defconfig
-make CONFIG_STATIC=y -j$(nproc)
-make install
-\`\`\`
-
-## Step 4: Creating the Root Filesystem
-
-Now we assemble our minimal root filesystem:
-
-\`\`\`bash
-mkdir -p $LFS/{bin,sbin,etc,proc,sys,usr/{bin,sbin}}
-cp -a busybox-1.36.0/_install/* $LFS/
-\`\`\`
-
-## Step 5: Building a Bootable ISO
-
-Finally, we create a bootable ISO using Syslinux:
-
-\`\`\`bash
-mkdir -p iso/boot/syslinux
-cp /usr/lib/syslinux/bios/*.c32 iso/boot/syslinux/
-cp /usr/lib/syslinux/bios/isolinux.bin iso/boot/syslinux/
-xorriso -as mkisofs -o mylinux.iso -b boot/syslinux/isolinux.bin iso/
-\`\`\`
-
-## Conclusion
-
-You now have a minimal but functional Linux distribution. From here, you can add package management, init systems, and desktop environments. The journey of a thousand miles begins with a single step—and you've just taken yours.
-    `,
-    date: "Nov 15, 2025",
-    readTime: "12 min read",
-    category: "systems",
-    tags: ["linux", "kernel", "devops"],
-    author: {
-      name: "Ehsan Ghaffar",
-      avatar: "/developer-portrait.png",
-      role: "Software Engineer",
-    },
-    featured: true,
-    color: "from-blue-500/20 to-cyan-500/20",
-  },
-  {
-    id: 2,
-    slug: "mcp-protocol-llm-applications",
-    title: "MCP Protocol in LLM Applications",
-    excerpt:
-      "Implementing Model Context Protocol for seamless AI model interactions with vector databases in RAG applications. Building smarter conversational systems.",
-    content: `
-## What is MCP?
-
-The Model Context Protocol (MCP) is an emerging standard for managing context in Large Language Model applications. It provides a structured way to handle conversation history, external knowledge, and tool interactions.
-
-## Why MCP Matters for RAG
-
-Retrieval-Augmented Generation (RAG) applications face a fundamental challenge: how do you efficiently combine retrieved documents with conversation context while staying within token limits?
-
-MCP solves this with:
-- **Context Windows**: Structured management of what the model "sees"
-- **Priority Queues**: Important context stays, less relevant context is pruned
-- **Streaming Updates**: Real-time context modification during generation
-
-## Implementation with Vector Databases
-
-Here's how to integrate MCP with a vector database like Pinecone:
-
-\`\`\`typescript
-import { MCPClient } from '@mcp/core';
-import { PineconeClient } from '@pinecone-database/pinecone';
-
-const mcp = new MCPClient({
-  maxTokens: 8192,
-  strategy: 'sliding-window'
-});
-
-async function queryWithContext(query: string) {
-  const embeddings = await generateEmbedding(query);
-  const results = await pinecone.query({
-    vector: embeddings,
-    topK: 5
-  });
-
-  mcp.addContext({
-    type: 'retrieved',
-    priority: 'high',
-    content: results.matches.map(m => m.metadata.text)
-  });
-
-  return mcp.generate(query);
+  void updateTheme(AppTheme theme) {
+    state = state.copyWith(theme: theme);
+    ref.read(storageProvider).saveSettings(state);
+  }
 }
 \`\`\`
 
-## Best Practices
+## Repository Pattern
 
-1. **Prioritize Recent Context**: User's last few messages should have highest priority
-2. **Chunk Retrieved Documents**: Don't dump entire documents; use relevant sections
-3. **Monitor Token Usage**: Always leave headroom for the model's response
-4. **Cache Embeddings**: Recompute only when necessary
+Keep your data layer clean with repository interfaces:
 
-## Conclusion
-
-MCP provides the structure needed to build production-grade RAG applications. As LLMs become more capable, efficient context management becomes the differentiator between good and great AI products.
-    `,
-    date: "Apr 28, 2025",
-    readTime: "8 min read",
-    category: "ai",
-    tags: ["llm", "rag", "mcp"],
-    author: {
-      name: "Ehsan Ghaffar",
-      avatar: "/developer-portrait.png",
-      role: "Software Engineer",
-    },
-    featured: false,
-    color: "from-purple-500/20 to-pink-500/20",
-  },
-  {
-    id: 3,
-    slug: "nextjs-16-tailwind-v4-migration",
-    title: "Next.js 16 + Tailwind CSS v4 Migration Guide",
-    excerpt:
-      "Exploring the new features in Next.js 16 and migrating to Tailwind CSS v4's new configuration system. A practical guide to modern frontend tooling.",
-    content: `
-## What's New in Next.js 16
-
-Next.js 16 brings significant changes that improve both developer experience and application performance:
-
-### Turbopack as Default
-
-Turbopack is now the default bundler, offering near-instant hot module replacement:
-
-\`\`\`bash
-# No configuration needed - it's automatic!
-npm run dev
-\`\`\`
-
-### Cache Components with "use cache"
-
-The new directive makes caching explicit and flexible:
-
-\`\`\`tsx
-'use cache'
-
-export default async function ProductPage({ id }) {
-  const product = await fetchProduct(id);
-  return <ProductDisplay product={product} />;
+\`\`\`dart
+abstract class PrayerRepository {
+  Future<List<PrayerTime>> getPrayerTimes(Location location);
+  Future<void> cachePrayerTimes(List<PrayerTime> times);
 }
-\`\`\`
 
-## Migrating to Tailwind CSS v4
+class PrayerRepositoryImpl implements PrayerRepository {
+  final ApiClient _api;
+  final LocalStorage _cache;
 
-Tailwind v4 introduces a CSS-first configuration approach:
+  PrayerRepositoryImpl(this._api, this._cache);
 
-### Before (tailwind.config.js)
-
-\`\`\`javascript
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        brand: '#3b82f6'
-      }
+  @override
+  Future<List<PrayerTime>> getPrayerTimes(Location location) async {
+    try {
+      final times = await _api.fetchPrayerTimes(location);
+      await cachePrayerTimes(times);
+      return times;
+    } catch (e) {
+      // Fallback to cache
+      return _cache.getPrayerTimes();
     }
   }
 }
 \`\`\`
 
-### After (globals.css)
+## Key Takeaways
 
-\`\`\`css
-@import 'tailwindcss';
+1. **Feature-first organization** — group by feature, not by type
+2. **One provider, one job** — keep providers small and composable
+3. **Repository pattern** — abstract data sources behind interfaces
+4. **Riverpod code generation** — use \`@riverpod\` annotations for less boilerplate
 
-@theme inline {
-  --color-brand: #3b82f6;
-  --font-sans: 'Inter', sans-serif;
+This architecture has served me well across multiple production apps. Start simple, scale when needed.
+    `,
+    date: "Mar 15, 2026",
+    readTime: "10 min read",
+    category: "flutter",
+    tags: ["flutter", "riverpod", "architecture"],
+    author,
+    featured: true,
+    color: "from-blue-500/20 to-cyan-500/20",
+  },
+  {
+    id: 2,
+    slug: "integrating-gemini-ai-flutter-apps",
+    title: "Integrating Gemini AI Into Flutter Apps",
+    excerpt:
+      "A step-by-step guide to adding Google's Gemini AI to your Flutter apps. Build intelligent features like chat, summarization, and context-aware assistants.",
+    content: `
+## Why Gemini in Flutter?
+
+Google's Gemini models are incredibly powerful for building AI features in mobile apps. I used Gemini extensively in **NativeChat** and **Noor** to create context-aware assistants. Here's how you can do the same.
+
+## Setting Up
+
+First, add the Gemini package:
+
+\`\`\`yaml
+dependencies:
+  google_generative_ai: ^0.4.0
+\`\`\`
+
+## Initialize the Model
+
+\`\`\`dart
+import 'package:google_generative_ai/google_generative_ai.dart';
+
+class GeminiService {
+  late final GenerativeModel _model;
+  late final ChatSession _chat;
+
+  GeminiService(String apiKey) {
+    _model = GenerativeModel(
+      model: 'gemini-2.0-flash',
+      apiKey: apiKey,
+      generationConfig: GenerationConfig(
+        temperature: 0.7,
+        maxOutputTokens: 2048,
+      ),
+    );
+    _chat = _model.startChat();
+  }
+
+  Future<String> sendMessage(String message) async {
+    final response = await _chat.sendMessage(
+      Content.text(message),
+    );
+    return response.text ?? 'No response';
+  }
 }
 \`\`\`
 
-## Step-by-Step Migration
+## Building a Chat UI
 
-1. **Update dependencies**:
-\`\`\`bash
-npm install next@16 tailwindcss@4
+The trick is streaming responses for a natural feel:
+
+\`\`\`dart
+Stream<String> streamResponse(String prompt) async* {
+  final response = _model.generateContentStream([
+    Content.text(prompt),
+  ]);
+
+  await for (final chunk in response) {
+    if (chunk.text != null) {
+      yield chunk.text!;
+    }
+  }
+}
 \`\`\`
 
-2. **Remove tailwind.config.js** and move configuration to CSS
+Then in your widget:
 
-3. **Update font imports** in layout.tsx
-
-4. **Test thoroughly** - some utility classes may have changed
-
-## Common Gotchas
-
-- \`@apply\` works differently in v4
-- Custom plugins need updates
-- Some deprecated utilities are removed
-
-## Conclusion
-
-The migration takes effort but the improved DX and performance are worth it. Start with a fresh branch and migrate incrementally.
-    `,
-    date: "Dec 10, 2024",
-    readTime: "10 min read",
-    category: "frontend",
-    tags: ["nextjs", "tailwind", "react"],
-    author: {
-      name: "Ehsan Ghaffar",
-      avatar: "/developer-portrait.png",
-      role: "Software Engineer",
-    },
-    featured: true,
-    color: "from-primary/20 to-emerald-500/20",
+\`\`\`dart
+StreamBuilder<String>(
+  stream: geminiService.streamResponse(userMessage),
+  builder: (context, snapshot) {
+    return AnimatedText(
+      text: snapshot.data ?? '',
+      style: Theme.of(context).textTheme.bodyMedium,
+    );
   },
-  {
-    id: 4,
-    slug: "self-hosting-llms-fastapi",
-    title: "Self-Hosting LLMs with FastAPI",
-    excerpt:
-      "Running Llama2 locally and building a personal chatbot API for natural language tasks. Complete guide from model setup to production deployment.",
-    content: `
-## Why Self-Host?
-
-Self-hosting LLMs gives you complete control over your AI infrastructure:
-- **Privacy**: Data never leaves your servers
-- **Cost**: No per-token charges after initial setup
-- **Customization**: Fine-tune for your specific use case
-
-## Hardware Requirements
-
-For Llama2-7B:
-- 16GB+ RAM
-- NVIDIA GPU with 8GB+ VRAM (or CPU with patience)
-- 50GB disk space
-
-## Setting Up the Environment
-
-\`\`\`bash
-python -m venv llm-env
-source llm-env/bin/activate
-pip install torch transformers fastapi uvicorn
-\`\`\`
-
-## Loading the Model
-
-\`\`\`python
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
-
-model_id = "meta-llama/Llama-2-7b-chat-hf"
-tokenizer = AutoTokenizer.from_pretrained(model_id)
-model = AutoModelForCausalLM.from_pretrained(
-    model_id,
-    torch_dtype=torch.float16,
-    device_map="auto"
 )
 \`\`\`
 
-## Building the FastAPI Server
+## Adding Context Awareness
 
-\`\`\`python
-from fastapi import FastAPI
-from pydantic import BaseModel
+What makes NativeChat special is context awareness. You can pass system instructions:
 
-app = FastAPI()
-
-class ChatRequest(BaseModel):
-    message: str
-    max_tokens: int = 256
-
-@app.post("/chat")
-async def chat(request: ChatRequest):
-    inputs = tokenizer(request.message, return_tensors="pt")
-    outputs = model.generate(**inputs, max_new_tokens=request.max_tokens)
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return {"response": response}
+\`\`\`dart
+final model = GenerativeModel(
+  model: 'gemini-2.0-flash',
+  apiKey: apiKey,
+  systemInstruction: Content.text(
+    'You are a helpful assistant that understands '
+    'Ethiopian culture and languages. Respond in '
+    'the same language the user writes in.',
+  ),
+);
 \`\`\`
 
-## Production Deployment
+## Best Practices
 
-Use Gunicorn with Uvicorn workers:
-
-\`\`\`bash
-gunicorn main:app -w 2 -k uvicorn.workers.UvicornWorker
-\`\`\`
+1. **Stream responses** — never make users wait for full generation
+2. **Cache conversations** — use Hive or SQLite for chat history
+3. **Handle errors gracefully** — network issues are common on mobile
+4. **Rate limit** — respect API quotas, implement local throttling
+5. **Secure API keys** — never hardcode, use \`--dart-define\` or env files
 
 ## Conclusion
 
-You now have a private, scalable LLM API. Consider adding rate limiting, authentication, and monitoring for production use.
+Gemini + Flutter is a powerful combination. The streaming API makes it feel native, and the multimodal capabilities open up endless possibilities.
     `,
-    date: "Oct 5, 2024",
-    readTime: "15 min read",
+    date: "Feb 20, 2026",
+    readTime: "8 min read",
     category: "ai",
-    tags: ["llm", "python", "fastapi"],
-    author: {
-      name: "Ehsan Ghaffar",
-      avatar: "/developer-portrait.png",
-      role: "Software Engineer",
-    },
-    featured: false,
-    color: "from-orange-500/20 to-amber-500/20",
+    tags: ["flutter", "gemini", "ai"],
+    author,
+    featured: true,
+    color: "from-purple-500/20 to-pink-500/20",
   },
   {
-    id: 5,
-    slug: "rust-wasm-performance",
-    title: "Rust + WebAssembly Performance Deep Dive",
+    id: 3,
+    slug: "flutter-home-screen-widgets-guide",
+    title: "Building Flutter Home Screen Widgets for Android",
     excerpt:
-      "Benchmarking Rust compiled to WebAssembly vs native JavaScript. When does WASM shine and when to stick with JS?",
+      "How I built the Ethio Cal home screen widget — a complete guide to creating native Android widgets from your Flutter app using Kotlin.",
     content: `
-## The Performance Question
+## The Challenge
 
-WebAssembly promises near-native performance in the browser. But is it always faster than JavaScript? Let's find out with real benchmarks.
+Flutter doesn't natively support home screen widgets. When I built **Ethio Cal**, I needed a resizable widget that updates dynamically. Here's exactly how I did it.
 
-## Test Setup
+## Architecture Overview
 
-We'll compare three scenarios:
-1. Pure JavaScript
-2. Rust compiled to WASM
-3. Rust WASM with JS interop
+The widget runs as a native Android component alongside your Flutter app:
 
-## Benchmark 1: Fibonacci (CPU-bound)
+\`\`\`
+┌─────────────────────────────┐
+│  Flutter App (Dart)         │
+│  └── Shared data layer      │
+│       └── Method Channel ───┼──► Native Widget (Kotlin)
+│                             │    └── AppWidgetProvider
+└─────────────────────────────┘
+\`\`\`
 
-\`\`\`rust
-// Rust
-#[wasm_bindgen]
-pub fn fibonacci(n: u32) -> u32 {
-    match n {
-        0 => 0,
-        1 => 1,
-        _ => fibonacci(n - 1) + fibonacci(n - 2)
+## Step 1: Create the Widget Layout
+
+Create \`res/layout/ethio_cal_widget.xml\`:
+
+\`\`\`xml
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/ethiopian_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textColor="@color/white"
+        android:fontFamily="sans-serif-medium" />
+
+    <TextView
+        android:id="@+id/gregorian_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/white_70" />
+</LinearLayout>
+\`\`\`
+
+## Step 2: Widget Provider in Kotlin
+
+\`\`\`kotlin
+class EthioCalWidget : AppWidgetProvider() {
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        for (appWidgetId in appWidgetIds) {
+            val views = RemoteViews(
+                context.packageName,
+                R.layout.ethio_cal_widget
+            )
+
+            val ethDate = EthiopianCalendar.today()
+            views.setTextViewText(
+                R.id.ethiopian_date,
+                ethDate.formatted()
+            )
+            views.setTextViewText(
+                R.id.gregorian_date,
+                SimpleDateFormat("MMM dd, yyyy").format(Date())
+            )
+
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
     }
 }
 \`\`\`
 
-\`\`\`javascript
-// JavaScript
-function fibonacci(n) {
-  if (n <= 1) return n;
-  return fibonacci(n - 1) + fibonacci(n - 2);
+## Step 3: Bridge with Method Channels
+
+\`\`\`dart
+class WidgetService {
+  static const _channel = MethodChannel('com.anexon.ethiocal/widget');
+
+  static Future<void> updateWidget() async {
+    await _channel.invokeMethod('updateWidget');
+  }
 }
 \`\`\`
 
-**Results (fib(40), 100 iterations)**:
-- JavaScript: 1,245ms
-- Rust WASM: 892ms
-- **WASM wins by 28%**
+## Step 4: Make It Resizable
 
-## Benchmark 2: Array Processing
+In \`res/xml/ethio_cal_widget_info.xml\`:
 
-Processing 1M elements with map/reduce operations.
+\`\`\`xml
+<appwidget-provider
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:updatePeriodMillis="86400000" />
+\`\`\`
 
-**Results**:
-- JavaScript: 45ms
-- Rust WASM: 52ms (with copy overhead)
-- Rust WASM SharedArrayBuffer: 23ms
-- **WASM wins only with shared memory**
+## Key Lessons
 
-## When to Use WASM
+- **Keep widget code native** — don't try to render Flutter in a widget
+- **Share data via SharedPreferences** — both Flutter and Kotlin can read/write
+- **Schedule updates** — use \`AlarmManager\` for reliable background updates
+- **Test on real devices** — emulator widget behavior can differ
 
-**Use WASM for**:
-- Heavy computation (image processing, cryptography)
-- Games and simulations
-- Porting existing C/C++/Rust codebases
-
-**Stick with JS for**:
-- DOM manipulation
-- Light data processing
-- When bundle size matters
-
-## Conclusion
-
-WASM isn't a silver bullet. The overhead of crossing the JS-WASM boundary can negate performance gains for small operations. Profile first, optimize second.
+This approach gave Ethio Cal a beautiful, performant home screen presence without compromising the Flutter app experience.
     `,
-    date: "Sep 18, 2024",
-    readTime: "11 min read",
-    category: "systems",
-    tags: ["rust", "wasm", "performance"],
-    author: {
-      name: "Ehsan Ghaffar",
-      avatar: "/developer-portrait.png",
-      role: "Software Engineer",
-    },
+    date: "Jan 28, 2026",
+    readTime: "12 min read",
+    category: "flutter",
+    tags: ["flutter", "android", "widgets", "kotlin"],
+    author,
     featured: false,
-    color: "from-red-500/20 to-orange-500/20",
+    color: "from-amber-500/20 to-orange-500/20",
+  },
+  {
+    id: 4,
+    slug: "supabase-flutter-realtime-apps",
+    title: "Building Real-Time Apps with Supabase & Flutter",
+    excerpt:
+      "How I built JMarket's real-time features using Supabase. Authentication, real-time database, storage, and row-level security in Flutter.",
+    content: `
+## Why Supabase?
+
+When building **JMarket**, I needed a backend that could handle authentication, real-time data, and file storage without the complexity of Firebase. Supabase was the perfect fit.
+
+## Setting Up
+
+\`\`\`yaml
+dependencies:
+  supabase_flutter: ^2.0.0
+\`\`\`
+
+Initialize in \`main.dart\`:
+
+\`\`\`dart
+await Supabase.initialize(
+  url: 'YOUR_SUPABASE_URL',
+  anonKey: 'YOUR_ANON_KEY',
+);
+\`\`\`
+
+## Authentication Made Simple
+
+\`\`\`dart
+class AuthService {
+  final _supabase = Supabase.instance.client;
+
+  Future<AuthResponse> signUp(String email, String password) async {
+    return await _supabase.auth.signUp(
+      email: email,
+      password: password,
+    );
+  }
+
+  Future<AuthResponse> signIn(String email, String password) async {
+    return await _supabase.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  // Listen to auth state changes
+  Stream<AuthState> get authStateChanges =>
+      _supabase.auth.onAuthStateChange;
+}
+\`\`\`
+
+## Real-Time Product Updates
+
+This is where Supabase shines. In JMarket, sellers see instant updates when products are purchased:
+
+\`\`\`dart
+final stream = Supabase.instance.client
+    .from('products')
+    .stream(primaryKey: ['id'])
+    .eq('seller_id', currentUserId)
+    .order('created_at');
+
+// In your widget
+StreamBuilder<List<Map<String, dynamic>>>(
+  stream: stream,
+  builder: (context, snapshot) {
+    if (!snapshot.hasData) return const Loading();
+    final products = snapshot.data!
+        .map((json) => Product.fromJson(json))
+        .toList();
+    return ProductGrid(products: products);
+  },
+)
+\`\`\`
+
+## Row-Level Security
+
+Protect your data at the database level:
+
+\`\`\`sql
+-- Users can only read their own orders
+CREATE POLICY "users_own_orders" ON orders
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Sellers can update their own products
+CREATE POLICY "sellers_update_products" ON products
+  FOR UPDATE USING (auth.uid() = seller_id);
+\`\`\`
+
+## File Storage
+
+Upload product images with ease:
+
+\`\`\`dart
+Future<String> uploadProductImage(File image, String productId) async {
+  final path = 'products/\$productId/\${DateTime.now().millisecondsSinceEpoch}.jpg';
+  await Supabase.instance.client.storage
+      .from('product-images')
+      .upload(path, image);
+  return Supabase.instance.client.storage
+      .from('product-images')
+      .getPublicUrl(path);
+}
+\`\`\`
+
+## Lessons from JMarket
+
+1. **Use RLS from day one** — it's much harder to add later
+2. **Optimize queries** — Supabase gives you raw SQL power, use it
+3. **Cache aggressively** — mobile networks are unreliable
+4. **Use Edge Functions** for complex business logic
+
+Supabase + Flutter is a match made in heaven for rapid app development.
+    `,
+    date: "Jan 10, 2026",
+    readTime: "11 min read",
+    category: "flutter",
+    tags: ["flutter", "supabase", "backend", "realtime"],
+    author,
+    featured: false,
+    color: "from-emerald-500/20 to-teal-500/20",
+  },
+  {
+    id: 5,
+    slug: "building-flutter-sdks-pub-dev",
+    title: "How I Built and Published a Flutter SDK to pub.dev",
+    excerpt:
+      "Lessons learned from building the Hasab AI Flutter SDK. Package architecture, documentation, CI/CD, and publishing best practices.",
+    content: `
+## The Journey
+
+When I built the **Hasab AI Flutter SDK**, I wanted to make Ethiopian language AI accessible to every Flutter developer. Here's the complete process from zero to published package.
+
+## Package Structure
+
+\`\`\`
+hasab_ai_flutter/
+├── lib/
+│   ├── hasab_ai_flutter.dart    # Public API barrel file
+│   ├── src/
+│   │   ├── client.dart          # Main client class
+│   │   ├── models/
+│   │   │   ├── speech.dart
+│   │   │   ├── translation.dart
+│   │   │   └── chat.dart
+│   │   ├── services/
+│   │   │   ├── stt_service.dart
+│   │   │   ├── tts_service.dart
+│   │   │   └── translate_service.dart
+│   │   └── utils/
+│   │       ├── exceptions.dart
+│   │       └── constants.dart
+├── example/
+├── test/
+├── pubspec.yaml
+├── README.md
+├── CHANGELOG.md
+└── LICENSE
+\`\`\`
+
+## Designing the Public API
+
+The key is making the SDK feel natural to use:
+
+\`\`\`dart
+// Simple, intuitive API
+final hasab = HasabAI(apiKey: 'your-key');
+
+// Speech to text
+final text = await hasab.speechToText(
+  audioFile: file,
+  language: HasabLanguage.amharic,
+);
+
+// Translation
+final result = await hasab.translate(
+  text: 'Hello, world!',
+  from: HasabLanguage.english,
+  to: HasabLanguage.amharic,
+);
+
+// Text to speech
+final audio = await hasab.textToSpeech(
+  text: 'ሰላም',
+  language: HasabLanguage.amharic,
+);
+\`\`\`
+
+## Writing Tests
+
+\`\`\`dart
+void main() {
+  late HasabAI client;
+  late MockHttpClient mockHttp;
+
+  setUp(() {
+    mockHttp = MockHttpClient();
+    client = HasabAI(
+      apiKey: 'test-key',
+      httpClient: mockHttp,
+    );
+  });
+
+  test('translate returns correct result', () async {
+    when(mockHttp.post(any, body: anyNamed('body')))
+        .thenAnswer((_) async => Response(
+          '{"translation": "ሰላም"}', 200));
+
+    final result = await client.translate(
+      text: 'Hello',
+      from: HasabLanguage.english,
+      to: HasabLanguage.amharic,
+    );
+
+    expect(result.translation, equals('ሰላም'));
+  });
+}
+\`\`\`
+
+## Publishing Checklist
+
+Before running \`dart pub publish\`:
+
+1. ✅ \`pubspec.yaml\` — complete metadata, proper versioning
+2. ✅ \`README.md\` — installation, quick start, full API docs
+3. ✅ \`CHANGELOG.md\` — follow Keep a Changelog format
+4. ✅ \`example/\` — runnable example app
+5. ✅ \`LICENSE\` — MIT or BSD-3 recommended
+6. ✅ Tests passing — aim for 80%+ coverage
+7. ✅ \`dart analyze\` — zero warnings
+8. ✅ \`dart doc\` — generates clean documentation
+
+## Key Lessons
+
+- **Start with the API you want**, then build the implementation
+- **Version semantically** — breaking changes = major bump
+- **Document everything** — your future self will thank you
+- **Add examples** — they're worth more than docs sometimes
+
+Publishing to pub.dev was incredibly rewarding. Seeing other developers use your SDK is the best feeling.
+    `,
+    date: "Dec 5, 2025",
+    readTime: "9 min read",
+    category: "flutter",
+    tags: ["flutter", "sdk", "pub.dev", "dart"],
+    author,
+    featured: false,
+    color: "from-indigo-500/20 to-violet-500/20",
   },
   {
     id: 6,
-    slug: "design-tokens-system",
-    title: "Building a Design Token System",
+    slug: "material-3-flutter-design-system",
+    title: "Mastering Material 3 Design in Flutter",
     excerpt:
-      "Creating a scalable design token architecture that works across platforms. From CSS variables to Figma tokens and everything in between.",
+      "How to build stunning Flutter UIs with Material 3. Dynamic color, custom themes, typography, and the design principles behind my apps.",
     content: `
-## What Are Design Tokens?
+## Why Material 3?
 
-Design tokens are the atomic values of your design system—colors, spacing, typography, shadows. They're platform-agnostic and enable consistency across web, mobile, and design tools.
+Material 3 (Material You) brings dynamic theming and more expressive design options to Flutter. Every app I've shipped in 2025 uses Material 3, and the results speak for themselves.
 
-## Token Hierarchy
+## Setting Up Material 3
 
-A well-structured token system has three layers:
-
-### 1. Primitive Tokens (Raw Values)
-
-\`\`\`json
-{
-  "blue-500": "#3b82f6",
-  "space-4": "16px",
-  "font-size-lg": "18px"
-}
+\`\`\`dart
+MaterialApp(
+  theme: ThemeData(
+    useMaterial3: true,
+    colorSchemeSeed: const Color(0xFF1B5E20), // Your brand color
+    brightness: Brightness.light,
+  ),
+  darkTheme: ThemeData(
+    useMaterial3: true,
+    colorSchemeSeed: const Color(0xFF1B5E20),
+    brightness: Brightness.dark,
+  ),
+  themeMode: ThemeMode.system,
+)
 \`\`\`
 
-### 2. Semantic Tokens (Purpose)
+## Dynamic Color (Android 12+)
 
-\`\`\`json
-{
-  "color-primary": "{blue-500}",
-  "spacing-component": "{space-4}",
-  "text-body": "{font-size-lg}"
-}
+\`\`\`dart
+import 'package:dynamic_color/dynamic_color.dart';
+
+DynamicColorBuilder(
+  builder: (lightDynamic, darkDynamic) {
+    return MaterialApp(
+      theme: ThemeData(
+        colorScheme: lightDynamic ?? _defaultLightScheme,
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData(
+        colorScheme: darkDynamic ?? _defaultDarkScheme,
+        useMaterial3: true,
+      ),
+    );
+  },
+)
 \`\`\`
 
-### 3. Component Tokens (Specific Use)
+## Custom Typography
 
-\`\`\`json
-{
-  "button-background": "{color-primary}",
-  "button-padding": "{spacing-component}",
-  "button-font-size": "{text-body}"
-}
+\`\`\`dart
+final textTheme = TextTheme(
+  displayLarge: GoogleFonts.spaceGrotesk(
+    fontSize: 57,
+    fontWeight: FontWeight.w400,
+  ),
+  headlineMedium: GoogleFonts.spaceGrotesk(
+    fontSize: 28,
+    fontWeight: FontWeight.w600,
+  ),
+  bodyLarge: GoogleFonts.inter(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    height: 1.5,
+  ),
+  labelLarge: GoogleFonts.jetBrainsMono(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+  ),
+);
 \`\`\`
 
-## Implementation in CSS
+## Component Theming
 
-\`\`\`css
-:root {
-  /* Primitives */
-  --blue-500: #3b82f6;
+Customize individual components:
 
-  /* Semantic */
-  --color-primary: var(--blue-500);
-
-  /* Component */
-  --button-bg: var(--color-primary);
-}
-
-.button {
-  background: var(--button-bg);
-}
+\`\`\`dart
+ThemeData(
+  cardTheme: CardTheme(
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: BorderSide(color: colorScheme.outlineVariant),
+    ),
+  ),
+  filledButtonTheme: FilledButtonThemeData(
+    style: FilledButton.styleFrom(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 24, vertical: 12,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+  ),
+)
 \`\`\`
 
-## Syncing with Figma
+## Design Principles I Follow
 
-Use the Tokens Studio plugin to export tokens:
+1. **Generous spacing** — let elements breathe
+2. **Consistent border radius** — pick a scale and stick to it (8, 12, 16, 24)
+3. **Subtle shadows** — M3 uses tonal elevation, not drop shadows
+4. **Motion matters** — use \`AnimatedContainer\` and \`Hero\` transitions
+5. **Responsive** — design for phones first, then tablets
 
-1. Define tokens in Figma using Tokens Studio
-2. Export as JSON
-3. Transform with Style Dictionary
-4. Generate platform-specific outputs
-
-## Conclusion
-
-Design tokens bridge the gap between design and development. Invest in the foundation, and your design system scales effortlessly.
+Material 3 makes Flutter apps look and feel premium. Invest time in your theme, and every screen benefits.
     `,
-    date: "Aug 22, 2024",
-    readTime: "9 min read",
-    category: "frontend",
-    tags: ["design-systems", "css", "tokens"],
-    author: {
-      name: "Ehsan Ghaffar",
-      avatar: "/developer-portrait.png",
-      role: "Software Engineer",
-    },
+    date: "Nov 18, 2025",
+    readTime: "8 min read",
+    category: "flutter",
+    tags: ["flutter", "material-3", "design", "ui-ux"],
+    author,
     featured: false,
     color: "from-teal-500/20 to-cyan-500/20",
   },

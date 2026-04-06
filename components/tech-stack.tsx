@@ -7,50 +7,60 @@ const techCategories = [
   {
     id: "mobile",
     label: "Mobile",
+    icon: "📱",
     color: "from-blue-500/20 to-cyan-500/20",
-    skills: [
-      { name: "Flutter", level: 95, icon: "🎯" },
-      { name: "Dart", level: 95, icon: "💎" },
-      { name: "Riverpod", level: 90, icon: "🔄" },
-      { name: "Firebase", level: 85, icon: "🔥" },
-      { name: "Supabase", level: 88, icon: "⚡" },
+    borderColor: "group-hover:border-blue-400/50",
+    tools: [
+      { name: "Flutter", icon: "🎯", description: "Primary framework" },
+      { name: "Dart", icon: "💎", description: "Core language" },
+      { name: "Riverpod", icon: "🔄", description: "State management" },
+      { name: "Firebase", icon: "🔥", description: "Backend & auth" },
+      { name: "Supabase", icon: "⚡", description: "DB & storage" },
+      { name: "Hive", icon: "📦", description: "Local storage" },
     ],
   },
   {
     id: "web",
     label: "Web",
+    icon: "🌐",
     color: "from-purple-500/20 to-pink-500/20",
-    skills: [
-      { name: "React", level: 85, icon: "⚛️" },
-      { name: "Next.js", level: 82, icon: "▲" },
-      { name: "TypeScript", level: 80, icon: "📘" },
-      { name: "Tailwind CSS", level: 90, icon: "🎨" },
-      { name: "Node.js", level: 78, icon: "🟢" },
+    borderColor: "group-hover:border-purple-400/50",
+    tools: [
+      { name: "React", icon: "⚛️", description: "UI library" },
+      { name: "Next.js", icon: "▲", description: "Full-stack framework" },
+      { name: "TypeScript", icon: "📘", description: "Type safety" },
+      { name: "Tailwind CSS", icon: "🎨", description: "Utility-first CSS" },
+      { name: "Node.js", icon: "🟢", description: "Runtime" },
+      { name: "PostgreSQL", icon: "🐘", description: "Database" },
     ],
   },
   {
     id: "ai",
     label: "AI & Tools",
+    icon: "🤖",
     color: "from-emerald-500/20 to-teal-500/20",
-    skills: [
-      { name: "Gemini AI", level: 85, icon: "✨" },
-      { name: "REST APIs", level: 92, icon: "🔗" },
-      { name: "Git", level: 90, icon: "🔀" },
-      { name: "CI/CD", level: 75, icon: "🚀" },
-      { name: "Figma", level: 70, icon: "🖼️" },
+    borderColor: "group-hover:border-emerald-400/50",
+    tools: [
+      { name: "Gemini AI", icon: "✨", description: "LLM integration" },
+      { name: "REST APIs", icon: "🔗", description: "API design" },
+      { name: "Git", icon: "🔀", description: "Version control" },
+      { name: "CI/CD", icon: "🚀", description: "Automation" },
+      { name: "Figma", icon: "🖼️", description: "Design" },
+      { name: "VS Code", icon: "💻", description: "IDE" },
     ],
   },
 ]
 
 const stats = [
-  { label: "Apps Shipped", value: "9+", icon: "📱" },
-  { label: "Years Coding", value: "4+", icon: "⌨️" },
-  { label: "Telegram Followers", value: "1.4k+", icon: "👥" },
-  { label: "Open Source", value: "8+", icon: "🌐" },
+  { label: "Apps Shipped", value: "9+", icon: "📱", accent: "text-blue-400" },
+  { label: "Years Coding", value: "4+", icon: "⌨️", accent: "text-purple-400" },
+  { label: "Telegram Followers", value: "1.4k+", icon: "👥", accent: "text-cyan-400" },
+  { label: "Open Source", value: "8+", icon: "🌐", accent: "text-emerald-400" },
 ]
 
 export function TechStack() {
   const [activeCategory, setActiveCategory] = useState("mobile")
+  const [hoveredTool, setHoveredTool] = useState<string | null>(null)
 
   const currentCategory = techCategories.find((c) => c.id === activeCategory)
 
@@ -66,7 +76,7 @@ export function TechStack() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
           {stats.map((stat, index) => (
             <div
               key={stat.label}
@@ -75,58 +85,84 @@ export function TechStack() {
             >
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">{stat.icon}</span>
-                <span className="text-2xl sm:text-3xl font-bold text-gradient">{stat.value}</span>
+                <span className={cn("text-2xl sm:text-3xl font-bold", stat.accent)}>{stat.value}</span>
               </div>
               <p className="font-mono text-xs text-muted-foreground">{stat.label}</p>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
           ))}
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        {/* Category Selector */}
+        <div className="flex flex-wrap gap-3 mb-10">
           {techCategories.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
               className={cn(
-                "px-4 py-2 rounded-lg font-mono text-xs uppercase tracking-wider transition-all duration-300",
+                "flex items-center gap-2.5 px-5 py-3 rounded-xl font-mono text-xs uppercase tracking-wider transition-all duration-400",
                 activeCategory === category.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card/40 border border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-[1.02]"
+                  : "bg-card/40 border border-border text-muted-foreground hover:border-primary/50 hover:text-foreground hover:bg-card/60",
               )}
             >
+              <span className="text-base">{category.icon}</span>
               {category.label}
             </button>
           ))}
         </div>
 
-        {/* Skills Grid */}
+        {/* Tools Grid - Modern Icon Cards */}
         <div
           className={cn(
-            "rounded-xl border border-border bg-card/40 glass p-6 sm:p-8 transition-all duration-500",
+            "rounded-2xl border border-border/60 bg-card/30 glass p-6 sm:p-8 transition-all duration-500",
             currentCategory && `bg-gradient-to-br ${currentCategory.color}`,
           )}
         >
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {currentCategory?.skills.map((skill, index) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {currentCategory?.tools.map((tool, index) => (
               <div
-                key={skill.name}
-                className="group relative overflow-hidden rounded-lg bg-background/50 p-4 transition-all duration-300 hover:bg-background/80 animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
+                key={tool.name}
+                className={cn(
+                  "group relative flex flex-col items-center gap-3 rounded-xl border border-border/50 bg-background/60 p-5 sm:p-6 transition-all duration-400 cursor-default animate-fade-in",
+                  hoveredTool === tool.name
+                    ? "border-primary/60 bg-background/90 shadow-lg shadow-primary/10 scale-[1.05] -translate-y-1"
+                    : "hover:border-primary/40 hover:bg-background/80 hover:shadow-md hover:-translate-y-0.5",
+                )}
+                style={{ animationDelay: `${index * 60}ms` }}
+                onMouseEnter={() => setHoveredTool(tool.name)}
+                onMouseLeave={() => setHoveredTool(null)}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{skill.icon}</span>
-                    <span className="font-medium">{skill.name}</span>
-                  </div>
-                  <span className="font-mono text-xs text-primary">{skill.level}%</span>
-                </div>
-                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-1000 ease-out"
-                    style={{ width: `${skill.level}%` }}
-                  />
-                </div>
+                {/* Icon */}
+                <span
+                  className={cn(
+                    "text-3xl sm:text-4xl transition-transform duration-400",
+                    hoveredTool === tool.name && "scale-110",
+                  )}
+                >
+                  {tool.icon}
+                </span>
+
+                {/* Name */}
+                <span className="font-medium text-sm text-center leading-tight">{tool.name}</span>
+
+                {/* Description tooltip on hover */}
+                <span
+                  className={cn(
+                    "font-mono text-[10px] text-primary/80 text-center transition-all duration-300",
+                    hoveredTool === tool.name ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1",
+                  )}
+                >
+                  {tool.description}
+                </span>
+
+                {/* Glow effect */}
+                <div
+                  className={cn(
+                    "absolute inset-0 rounded-xl bg-gradient-to-br from-primary/10 to-transparent transition-opacity duration-400",
+                    hoveredTool === tool.name ? "opacity-100" : "opacity-0",
+                  )}
+                />
               </div>
             ))}
           </div>
