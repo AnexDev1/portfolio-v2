@@ -201,7 +201,7 @@ export function ProjectsPageContent() {
       <section className="px-4 sm:px-6 py-12 sm:py-20">
         <div className="mx-auto max-w-7xl">
           {/* Hero */}
-          <div className={cn("mb-12 sm:mb-16 space-y-4 opacity-0", isVisible && "animate-fade-in-up")}>
+          <div className={cn("mb-12 sm:mb-16 space-y-4", isVisible ? "animate-fade-in-up" : "opacity-0")}>
             <p className="font-mono text-xs uppercase tracking-[0.25em] sm:tracking-[0.35em] text-primary">
               Project Showcase
             </p>
@@ -213,25 +213,25 @@ export function ProjectsPageContent() {
               a skill sharpened.
             </p>
 
-            {/* Project count */}
-            <div className="flex items-center gap-6 pt-2">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-gradient">{projects.length}</span>
-                <span className="font-mono text-xs text-muted-foreground uppercase">Total Projects</span>
+            {/* Project count stats section */}
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-6 pt-4">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-3xl font-bold text-primary leading-none">{projects.length}</span>
+                <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Total Projects</span>
               </div>
-              <div className="h-8 w-px bg-border/50" />
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-gradient">
+              <div className="hidden sm:block h-10 w-px bg-border/50" />
+              <div className="flex flex-col gap-1.5">
+                <span className="text-3xl font-bold text-primary leading-none">
                   {projects.filter((p) => p.status === "shipped").length}
                 </span>
-                <span className="font-mono text-xs text-muted-foreground uppercase">Shipped</span>
+                <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Shipped</span>
               </div>
-              <div className="h-8 w-px bg-border/50" />
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-gradient">
-                  {projects.reduce((sum, p) => sum + p.stars, 0)}
+              <div className="hidden sm:block h-10 w-px bg-border/50" />
+              <div className="flex flex-col gap-1.5">
+                <span className="text-3xl font-bold text-primary leading-none">
+                  {projects.reduce((sum, p) => sum + (p.stars || 0), 0)}
                 </span>
-                <span className="font-mono text-xs text-muted-foreground uppercase">Total Stars</span>
+                <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Total Stars</span>
               </div>
             </div>
           </div>
