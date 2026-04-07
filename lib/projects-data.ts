@@ -217,6 +217,23 @@ export const projects: Project[] = [
     featured: true,
     category: "sdk",
   },
+  {
+    id: 11,
+    title: "Abren Inemarr!",
+    description:
+      "An interactive Habeshan education app for kids learning Amharic and Afaan Oromoo with games, challenges, and a safe parental environment.",
+    longDescription:
+      "Abren Inemarr! is an interactive educational platform designed for children to explore Habeshan languages and culture. Through a structured learning journey, kids master the Ge'ez script, complete daily challenges, earn achievements, and track progress on a global leaderboard. It combines modern gamification with traditional values for a playful, parent-approved early learning experience.",
+    tags: ["Flutter", "Dart", "Education", "Cultural", "Gamification"],
+    status: "shipped",
+    year: "2026",
+    stars: 0,
+    forks: 0,
+    banner: "/projects/children_banner.png",
+    bannerGradient: "from-amber-500 via-orange-500 to-rose-500",
+    featured: true,
+    category: "mobile",
+  },
 ]
 
 export const allTags = [...new Set(projects.flatMap((p) => p.tags))]
