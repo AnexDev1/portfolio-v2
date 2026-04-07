@@ -1,21 +1,21 @@
 export interface Project {
-  id: number
-  title: string
-  description: string
-  longDescription: string
-  tags: string[]
-  status: "shipped" | "in-progress" | "archived"
-  year: string
-  stars: number
-  forks: number
-  githubUrl?: string
-  liveUrl?: string
-  playstoreUrl?: string
-  banner: string // gradient fallback or image path
-  bannerGradient: string
-  featured: boolean
-  highlight?: boolean
-  category: "mobile" | "web" | "sdk" | "ai"
+  id: number;
+  title: string;
+  description: string;
+  longDescription: string;
+  tags: string[];
+  status: "shipped" | "in-progress" | "archived";
+  year: string;
+  stars: number;
+  forks: number;
+  githubUrl?: string;
+  liveUrl?: string;
+  playstoreUrl?: string;
+  banner: string; // gradient fallback or image path
+  bannerGradient: string;
+  featured: boolean;
+  highlight?: boolean;
+  category: "mobile" | "web" | "sdk" | "ai";
 }
 
 export const projects: Project[] = [
@@ -51,7 +51,8 @@ export const projects: Project[] = [
     year: "2025",
     stars: 0,
     forks: 0,
-    playstoreUrl: "https://play.google.com/store/apps/details?id=com.anexon.codecast",
+    playstoreUrl:
+      "https://play.google.com/store/apps/details?id=com.anexon.codecast",
     banner: "/projects/codecast_banner.png",
     bannerGradient: "from-violet-600 via-purple-500 to-fuchsia-400",
     featured: true,
@@ -142,7 +143,8 @@ export const projects: Project[] = [
     stars: 12,
     forks: 4,
     githubUrl: "https://github.com/AnexDev1/EchoLog",
-    playstoreUrl: "https://play.google.com/store/apps/details?id=com.anexon.echolog",
+    playstoreUrl:
+      "https://play.google.com/store/apps/details?id=com.anexon.echolog",
     banner: "/projects/echolog.png",
     bannerGradient: "from-green-500 via-emerald-500 to-teal-400",
     featured: false,
@@ -187,8 +189,10 @@ export const projects: Project[] = [
   {
     id: 9,
     title: "FocusTrack",
-    description: "A productivity native desktop app with real-time tracking, advanced analytics, data export, and beautiful UI/UX.",
-    longDescription: "A powerful desktop application that tracks active applications with intelligent app name extraction, provides live activity monitoring, idle time detection, and comprehensive session management. It features beautiful glassmorphic UI, advanced analytics with multiple time views, and complete data export capabilities.",
+    description:
+      "A productivity native desktop app with real-time tracking, advanced analytics, data export, and beautiful UI/UX.",
+    longDescription:
+      "A powerful desktop application that tracks active applications with intelligent app name extraction, provides live activity monitoring, idle time detection, and comprehensive session management. It features beautiful glassmorphic UI, advanced analytics with multiple time views, and complete data export capabilities.",
     tags: ["Desktop", "Productivity", "Analytics", "Rust", "React"],
     status: "shipped",
     year: "2025",
@@ -204,8 +208,10 @@ export const projects: Project[] = [
   {
     id: 10,
     title: "Addis AI Flutter SDK",
-    description: "A clean, robust, and asynchronous Dart SDK for the Addis AI REST and Realtime API tailored for Ethiopian languages.",
-    longDescription: "A clean, robust, and asynchronous Dart SDK for the Addis AI REST and Realtime API. Purpose-built for Ethiopian languages, providing native-level generation, understanding, and speech synthesis for Amharic and Afan Oromo. Features include multimodal chat, streaming responses, TTS, and Realtime WebSockets for voice-to-voice agents.",
+    description:
+      "A clean, robust, and asynchronous Dart SDK for the Addis AI REST and Realtime API tailored for Ethiopian languages.",
+    longDescription:
+      "A clean, robust, and asynchronous Dart SDK for the Addis AI REST and Realtime API. Purpose-built for Ethiopian languages, providing native-level generation, understanding, and speech synthesis for Amharic and Afan Oromo. Features include multimodal chat, streaming responses, TTS, and Realtime WebSockets for voice-to-voice agents.",
     tags: ["Flutter", "Dart", "SDK", "AI", "NLP"],
     status: "shipped",
     year: "2025",
@@ -234,8 +240,8 @@ export const projects: Project[] = [
     featured: true,
     category: "mobile",
   },
-]
+];
 
-export const allTags = [...new Set(projects.flatMap((p) => p.tags))]
-export const categories = ["all", "mobile", "web", "sdk", "ai"] as const
-export type Category = (typeof categories)[number]
+export const allTags = [...new Set(projects.flatMap((p) => p.tags))];
+export const categories = ["all", "mobile", "web", "sdk", "ai"] as const;
+export type Category = (typeof categories)[number];
